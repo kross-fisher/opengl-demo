@@ -3,6 +3,8 @@
 #include <math.h>
 #include <iostream>
 
+#include "shader.h"
+
 const char *vertexShaderSource =
 "#version 330 core\n"
 "layout (location = 0) in vec3 aPos;\n"
@@ -156,12 +158,8 @@ int main() {
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)12);
     glEnableVertexAttribArray(1);
 
-    unsigned int program = configShaderProgram();
-    if (program == -1) {
-        std::cout << "Failed to link shader program!!!" << std::endl;
-        glfwTerminate();
-        return -1;
-    }
+    //unsigned int program = configShaderProgram();
+    Shader shader("src/vertex_shader.vs", "src/fragment_shader.fs");
 
     while (!glfwWindowShouldClose(window)) {
 
@@ -170,7 +168,8 @@ int main() {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glUseProgram(program);
+        //glUseProgram(program);
+        shader.use();
 
         /*
         float timeValue = glfwGetTime();
