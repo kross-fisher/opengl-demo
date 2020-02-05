@@ -161,6 +161,8 @@ int main() {
     //unsigned int program = configShaderProgram();
     Shader shader("src/vertex_shader.vs", "src/fragment_shader.fs");
 
+    float t0 = glfwGetTime();
+
     while (!glfwWindowShouldClose(window)) {
 
         processInput(window);
@@ -179,13 +181,15 @@ int main() {
         int vertexColorLocation = glGetUniformLocation(program, "ourColor");
         glUniform4f(vertexColorLocation, redValue, greenValue, blueValue, 1.0f);
         */
+        float timeValue = glfwGetTime();
+        shader.setFloat("xOffset", sinf(timeValue - t0) / 3);
 
         glBindVertexArray(VAO);
 
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         glDrawArrays(GL_TRIANGLES, 3, 3);
 
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         glBindVertexArray(0);

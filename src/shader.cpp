@@ -94,11 +94,11 @@ void Shader::setBool(const char* name, bool value) const {
 }
 
 void Shader::setFloat(const char* name, float value) const {
-    glUniform1i(glGetUniformLocation(programID, name), value);
+    glUniform1f(glGetUniformLocation(programID, name), value);
 }
 
 void Shader::setInt(const char* name, int value) const {
-    glUniform1f(glGetUniformLocation(programID, name), value);
+    glUniform1i(glGetUniformLocation(programID, name), value);
 }
 
 /* for test ...
