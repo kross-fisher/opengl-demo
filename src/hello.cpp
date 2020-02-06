@@ -6,6 +6,10 @@
 #include "shader.h"
 #include "stb_image.h"
 
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtc/type_ptr.hpp"
+
 const char *vertexShaderSource =
 "#version 330 core\n"
 "layout (location = 0) in vec3 aPos;\n"
@@ -209,6 +213,8 @@ int main() {
 
     float t0 = glfwGetTime();
 
+    unsigned int transLoc = glGetUniformLocation(shader.programID, "transform");
+
     while (!glfwWindowShouldClose(window)) {
 
         processInput(window);
@@ -226,6 +232,15 @@ int main() {
         */
         float timeValue = glfwGetTime();
         shader.setFloat("xOffset", sinf(timeValue - t0) / 3);
+
+        //float sf = sinf((timeValue-t0)*5) / 3 + 0.667f;
+
+        glm::mat4 trans(1.0f);
+        trans = glm::rotate(trans,
+                glm::radians((timeValue-t0)*180), glm::vec3(0,0,1));
+        //trans = glm::scale(trans, glm::vec3(sf, sf, 1.0f));
+
+        glUniformMatrix4fv(transLoc, 1, GL_FALSE, glm::value_ptr(trans));
 
         glBindVertexArray(VAO);
 
