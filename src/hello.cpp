@@ -4,6 +4,7 @@
 #include <iostream>
 
 #include "shader.h"
+#include "stb_image.h"
 
 const char *vertexShaderSource =
 "#version 330 core\n"
@@ -93,6 +94,38 @@ void processInput(GLFWwindow *window) {
         glfwSetWindowShouldClose(window, true);
 }
 
+void generateTexture(int texUnitID, const char* resPath) {
+    unsigned int textureID;
+    glGenTextures(1, &textureID);
+    std::cout << "generating texture #" << textureID << std::endl;
+
+    glActiveTexture(GL_TEXTURE0 + texUnitID);
+    glBindTexture(GL_TEXTURE_2D, textureID);
+    // set the texture wrapping/filtering options
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    int width, height, nchannels;
+    unsigned char *data =
+        stbi_load(resPath, &width, &height, &nchannels, 0);
+    std::cout << "-- width: " << width << std::endl;
+    std::cout << "-- height: " << height << std::endl;
+    std::cout << "-- nchannels: " << nchannels << std::endl;
+
+    if (!data) {
+        std::cout << "Failed to load texture" << std::endl;
+    }
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0,
+            nchannels == 4 ?  GL_RGBA : GL_RGB,
+            GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    stbi_image_free(data);
+}
+
 int main() {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -120,12 +153,13 @@ int main() {
     /* Now begin the OpenGL part ... */
 
     float vertices[] = {
-        -0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,
-         0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,
-         0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f,
-         0.5f,  0.2f, 0.0f,  1.0f, 0.0f, 0.0f,
-         0.8f,  0.8f, 0.0f,  0.0f, 1.0f, 0.0f,
-         0.2f,  0.8f, 0.0f,  0.0f, 0.0f, 1.0f,
+        // positions         // colors          // texture coords
+        -0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,  0.2f, 1.0f,
+         0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,  0.8f, 1.0f,
+         0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f,  0.5f, -.4f,
+         0.5f,  0.2f, 0.0f,  1.0f, 0.0f, 0.0f,  0.8f, 0.0f,
+         0.8f,  0.8f, 0.0f,  0.0f, 1.0f, 0.0f,  1.0f, -.8f,
+         0.2f,  0.8f, 0.0f,  0.0f, 0.0f, 1.0f,  0.6f, -.8f,
     };
 
     unsigned int indices[] = {
@@ -152,14 +186,26 @@ int main() {
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     // position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
     // color attribute
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)12);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)12);
     glEnableVertexAttribArray(1);
+    // texture coords
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)24);
+    glEnableVertexAttribArray(2);
 
     //unsigned int program = configShaderProgram();
     Shader shader("src/vertex_shader.vs", "src/fragment_shader.fs");
+
+    //glUseProgram(program);
+    shader.use();
+
+    // generating textures
+    generateTexture(0, "res/moting.jpg");
+    generateTexture(1, "res/wall.jpg");
+    shader.setInt("ourTexture1", 0);
+    shader.setInt("ourTexture2", 1);
 
     float t0 = glfwGetTime();
 
@@ -169,9 +215,6 @@ int main() {
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-
-        //glUseProgram(program);
-        shader.use();
 
         /*
         float timeValue = glfwGetTime();
