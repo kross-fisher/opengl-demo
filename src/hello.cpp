@@ -231,14 +231,20 @@ int main() {
         glUniform4f(vertexColorLocation, redValue, greenValue, blueValue, 1.0f);
         */
         float timeValue = glfwGetTime();
-        shader.setFloat("xOffset", sinf(timeValue - t0) / 3);
+        //shader.setFloat("xOffset", sinf(timeValue - t0) / 3);
 
-        //float sf = sinf((timeValue-t0)*5) / 3 + 0.667f;
+        /* scale factor */
+        float sf = sinf((timeValue-t0)*0.3f) / 2.1f + 0.5f;
+        //float sf = 0.1f;
+
+        /* degrees to rotate */
+        float rd = glm::radians((timeValue-t0)*18.0f);
+        //float rd = glm::radians(15.0f);
 
         glm::mat4 trans(1.0f);
-        trans = glm::rotate(trans,
-                glm::radians((timeValue-t0)*180), glm::vec3(0,0,1));
-        //trans = glm::scale(trans, glm::vec3(sf, sf, 1.0f));
+        trans = glm::rotate(trans, rd, glm::vec3(0,0,1));
+        trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 1.0f));
+        trans = glm::scale(trans, glm::vec3(sf, sf, 1.0f));
 
         glUniformMatrix4fv(transLoc, 1, GL_FALSE, glm::value_ptr(trans));
 
