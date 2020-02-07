@@ -214,6 +214,9 @@ int main() {
     float t0 = glfwGetTime();
 
     unsigned int transLoc = glGetUniformLocation(shader.programID, "transform");
+    unsigned int modelLoc = glGetUniformLocation(shader.programID, "model");
+    unsigned int viewLoc = glGetUniformLocation(shader.programID, "view");
+    unsigned int projectLoc = glGetUniformLocation(shader.programID, "projection");
 
     while (!glfwWindowShouldClose(window)) {
 
@@ -246,7 +249,23 @@ int main() {
         trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 1.0f));
         trans = glm::scale(trans, glm::vec3(sf, sf, 1.0f));
 
-        glUniformMatrix4fv(transLoc, 1, GL_FALSE, glm::value_ptr(trans));
+        //glUniformMatrix4fv(transLoc, 1, GL_FALSE, glm::value_ptr(trans));
+
+        // some 3D transformations
+        float view_distance = sinf((timeValue-t0)*0.3f)*1.0f - 1.5f;
+
+        glm::mat4 model(1.0f);
+        model = glm::rotate(model, glm::radians(-55.0f),
+                glm::vec3(1.0f, 0.0f, 0.0f));
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+
+        glm::mat4 view(1.0f);
+        view = glm::translate(view, glm::vec3(0.0f, 0.0f, view_distance));
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+
+        glm::mat4 projection(1.0f);
+        projection = glm::perspective(glm::radians(45.0f), 800.0f/600, .1f, 100.0f);
+        glUniformMatrix4fv(projectLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
         glBindVertexArray(VAO);
 
