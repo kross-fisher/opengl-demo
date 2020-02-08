@@ -236,10 +236,30 @@ int main() {
 
     float t0 = glfwGetTime();
 
-    unsigned int transLoc = glGetUniformLocation(shader.programID, "transform");
     unsigned int modelLoc = glGetUniformLocation(shader.programID, "model");
     unsigned int viewLoc = glGetUniformLocation(shader.programID, "view");
     unsigned int projectLoc = glGetUniformLocation(shader.programID, "projection");
+
+    glm::vec3 cubePositions[] = {
+        glm::vec3( 0.0f, -0.2f, -1.8f),
+        glm::vec3( 2.0f,  5.0f, -15.0f),
+        glm::vec3(-1.2f, -2.2f, -3.8f),
+        glm::vec3(-3.8f, -2.0f, -12.3f),
+        glm::vec3( 2.4f, -0.4f, -3.5f),
+        glm::vec3(-1.7f,  3.0f, -7.5f),
+        glm::vec3( 1.3f, -2.0f, -2.5f),
+        glm::vec3( 1.5f,  2.0f, -2.5f),
+        glm::vec3( 1.5f,  0.2f, -1.5f),
+        glm::vec3(-1.3f,  1.0f, -1.5f),
+    };
+
+    int posNum = sizeof(cubePositions)/sizeof(cubePositions[0]);
+
+    float rotateOffsets[posNum];
+
+    for (int i = 0; i < posNum; ++i) {
+        rotateOffsets[i] = (float) (rand() % 360);
+    }
 
     while (!glfwWindowShouldClose(window)) {
 
@@ -247,6 +267,8 @@ int main() {
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        for (int i = 0; i < posNum; ++i) {
 
         float timeValue = glfwGetTime();
         //shader.setFloat("xOffset", sinf(timeValue - t0) / 3);
@@ -256,22 +278,16 @@ int main() {
         //float sf = 0.1f;
 
         /* degrees to rotate */
-        float rd = glm::radians((timeValue-t0)*80.0f);
+        float rd = glm::radians((timeValue-t0+rotateOffsets[i])*30.0f);
         //float rd = glm::radians(90.0f);
 
-        glm::mat4 trans(1.0f);
-        //trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 1.0f));
-        trans = glm::rotate(trans, rd, glm::vec3(0,0,1));
-        //trans = glm::scale(trans, glm::vec3(sf, sf, 1.0f));
-
-        //glUniformMatrix4fv(transLoc, 1, GL_FALSE, glm::value_ptr(trans));
-
         // some 3D transformations
-        float view_distance = -2.6f; //sinf((timeValue-t0)*0.3f)*1.0f - 1.5f;
+        float view_distance = -3.6f; //sinf((timeValue-t0)*0.3f)*1.0f - 1.5f;
 
         float rotx = sinf((timeValue-t0)*0.4f);
 
         glm::mat4 model(1.0f);
+        model = glm::translate(model, cubePositions[i]);
         model = glm::rotate(model, rd, glm::vec3(rotx, 0.8f, 0.3f));
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
@@ -290,6 +306,8 @@ int main() {
 
         //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+        }
 
         glBindVertexArray(0);
 
