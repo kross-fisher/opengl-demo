@@ -157,31 +157,57 @@ int main() {
     /* Now begin the OpenGL part ... */
 
     float vertices[] = {
-        // positions         // colors          // texture coords
-        -0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,  0.2f, 1.0f,
-         0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,  0.8f, 1.0f,
-         0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f,  0.5f, -.4f,
-         0.5f,  0.2f, 0.0f,  1.0f, 0.0f, 0.0f,  0.8f, 0.0f,
-         0.8f,  0.8f, 0.0f,  0.0f, 1.0f, 0.0f,  1.0f, -.8f,
-         0.2f,  0.8f, 0.0f,  0.0f, 0.0f, 1.0f,  0.6f, -.8f,
-    };
+        // positions          // tex coords
+        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,   // back
+         0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
 
-    unsigned int indices[] = {
-        0, 1, 2,
-        1, 2, 3,
+        -0.5f, -0.5f,  0.5f,  0.0f, 1.0f,   // front
+         0.5f, -0.5f,  0.5f,  1.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 1.0f,
+
+        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,   // left
+        -0.5f,  0.5f, -0.5f,  0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  1.0f, 1.0f,
+        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+         0.5f,  0.5f,  0.5f,  0.0f, 0.0f,   // right
+         0.5f,  0.5f, -0.5f,  1.0f, 0.0f,
+         0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,  0.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,   // bottom
+         0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+        -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,   // top
+         0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,  1.0f, 1.0f
     };
 
     glViewport(0, 0, 800, 600);
 
+    glEnable(GL_DEPTH_TEST);
+
     unsigned int VAO;
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
-
-    unsigned int EBO;
-    glGenBuffers(1, &EBO);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     unsigned int VBO;
     glGenBuffers(1, &VBO);
@@ -190,13 +216,10 @@ int main() {
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     // position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-    // color attribute
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)12);
-    glEnableVertexAttribArray(1);
     // texture coords
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)24);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)12);
     glEnableVertexAttribArray(2);
 
     //unsigned int program = configShaderProgram();
@@ -223,40 +246,33 @@ int main() {
         processInput(window);
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        /*
-        float timeValue = glfwGetTime();
-        float redValue = (sin(timeValue) / 2.0f) + 0.5f;
-        float greenValue = (cos(timeValue) / 2.0f) + 0.5f;
-        float blueValue = 1.0f - (redValue * 3 + greenValue * 2) / 5;
-        int vertexColorLocation = glGetUniformLocation(program, "ourColor");
-        glUniform4f(vertexColorLocation, redValue, greenValue, blueValue, 1.0f);
-        */
         float timeValue = glfwGetTime();
         //shader.setFloat("xOffset", sinf(timeValue - t0) / 3);
 
         /* scale factor */
-        float sf = sinf((timeValue-t0)*0.3f) / 2.1f + 0.5f;
+        float sf = sinf((timeValue-t0)*0.5f) / 2.1f + 1.5f;
         //float sf = 0.1f;
 
         /* degrees to rotate */
-        float rd = glm::radians((timeValue-t0)*18.0f);
-        //float rd = glm::radians(15.0f);
+        float rd = glm::radians((timeValue-t0)*80.0f);
+        //float rd = glm::radians(90.0f);
 
         glm::mat4 trans(1.0f);
+        //trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 1.0f));
         trans = glm::rotate(trans, rd, glm::vec3(0,0,1));
-        trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 1.0f));
-        trans = glm::scale(trans, glm::vec3(sf, sf, 1.0f));
+        //trans = glm::scale(trans, glm::vec3(sf, sf, 1.0f));
 
         //glUniformMatrix4fv(transLoc, 1, GL_FALSE, glm::value_ptr(trans));
 
         // some 3D transformations
-        float view_distance = sinf((timeValue-t0)*0.3f)*1.0f - 1.5f;
+        float view_distance = -2.6f; //sinf((timeValue-t0)*0.3f)*1.0f - 1.5f;
+
+        float rotx = sinf((timeValue-t0)*0.4f);
 
         glm::mat4 model(1.0f);
-        model = glm::rotate(model, glm::radians(-55.0f),
-                glm::vec3(1.0f, 0.0f, 0.0f));
+        model = glm::rotate(model, rd, glm::vec3(rotx, 0.8f, 0.3f));
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
         glm::mat4 view(1.0f);
@@ -270,10 +286,10 @@ int main() {
         glBindVertexArray(VAO);
 
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        glDrawArrays(GL_TRIANGLES, 3, 3);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
 
         //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         glBindVertexArray(0);
 
