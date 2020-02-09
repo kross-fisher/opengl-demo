@@ -292,7 +292,7 @@ int main() {
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
         glm::mat4 view(1.0f);
-        view = glm::translate(view, glm::vec3(0.0f, 0.0f, view_distance));
+        view = glm::translate(view, glm::vec3(-1.2f, 0.0f, view_distance));
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
 
         glm::mat4 projection(1.0f);
