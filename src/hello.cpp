@@ -65,10 +65,26 @@ void configCubeVAO(unsigned int *ptrVAO) {
     glBindVertexArray(0);   // Unbind VAO
 }
 
+void configLightVAO(unsigned int *ptrVAO) {
+    glGenVertexArrays(1, ptrVAO);
+    glBindVertexArray(*ptrVAO);
+
+    unsigned int VBO;
+    glGenBuffers(1, &VBO);
+
+    int light_data_len = sizeof(vertices_cube);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, light_data_len, vertices_cube, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glBindVertexArray(0);
+}
+
 void generateTexture(int texUnitID, const char *resPath) {
     unsigned int textureID;
     glGenTextures(1, &textureID);
-    std::cout << "generating texture #" << textureID << std::endl;
 
     glActiveTexture(GL_TEXTURE0 + texUnitID);
     glBindTexture(GL_TEXTURE_2D, textureID);
@@ -82,10 +98,6 @@ void generateTexture(int texUnitID, const char *resPath) {
 
     unsigned char *data =
         stbi_load(resPath, &width, &height, &nchannels, 0);
-    std::cout << "-- width: " << width << std::endl;
-    std::cout << "-- height: " << height << std::endl;
-    std::cout << "-- nchannels: " << nchannels << std::endl;
-
     if (!data) {
         std::cout << "Failed to load texture: " << resPath << std::endl;
         glfwTerminate(); exit(-1);
@@ -99,7 +111,7 @@ void generateTexture(int texUnitID, const char *resPath) {
     stbi_image_free(data);
 }
 
-void configModelMatrix(Shader &shader) {
+void configCubeModelMatrix(Shader &shader) {
     static glm::vec3 rot_axis;
     static bool rot_axis_set = false;
 
@@ -111,13 +123,36 @@ void configModelMatrix(Shader &shader) {
         std::cout << "rotating axis: " << vecx<< ", "
             << vecy << ", " << vecz << std::endl;
         rot_axis = glm::vec3(vecx, vecy, vecz);
-        rot_axis_set = true;
+        rot_axis_set = (vecx != 0 || vecy != 0 || vecz != 0);
     }
-    float rot_degrees = glfwGetTime() * 90.0f;
+    float rot_degrees = glfwGetTime() * 60.0f;
 
     glm::mat4 model(1.0f);
-    model = glm::translate(model, glm::vec3(0.0f, 0.0f, -2.4f));
+    model = glm::translate(model, glm::vec3(-0.8f, 0.0f, -3.0f));
     model = glm::rotate(model, glm::radians(rot_degrees), rot_axis);
+    shader.setMat4("model", model);
+}
+
+void configLightModelMatrix(Shader &shader) {
+    static glm::vec3 rot_axis;
+    static bool rot_axis_set = false;
+
+    if (!rot_axis_set) { // init only once
+        srand(1000 * glfwGetTime());
+        float vecx = (rand()%5 - 2) / 2.0f;
+        float vecy = (rand()%5 - 2) / 2.0f;
+        float vecz = (rand()%5 - 2) / 2.0f;
+        std::cout << "rotating axis: " << vecx<< ", "
+            << vecy << ", " << vecz << std::endl;
+        rot_axis = glm::vec3(vecx, vecy, vecz);
+        rot_axis_set = (vecx != 0 || vecy != 0 || vecz != 0);
+    }
+    float rot_degrees = glfwGetTime() * 150.0f;
+
+    glm::mat4 model(1.0f);
+    model = glm::translate(model, glm::vec3(1.5f, 0.2f, -2.5f));
+    model = glm::rotate(model, glm::radians(rot_degrees), rot_axis);
+    model = glm::scale(model, glm::vec3(0.2f));
     shader.setMat4("model", model);
 }
 
@@ -133,7 +168,37 @@ void configProjectionMatrix(Shader &shader) {
     glm::mat4 proj(1.0f);
     float win_ratio = win_width / win_height;
     proj = glm::perspective(glm::radians(45.0f), win_ratio, 0.1f, 100.0f);
+    //float hmax = win_height / 400; float wmax = hmax * win_ratio;
+    //proj = glm::ortho(-wmax, wmax, -hmax, hmax, 0.1f, 100.0f);
     shader.setMat4("proj", proj);
+}
+
+void drawCubeObject(unsigned int cubeVAO, Shader &shader) {
+    shader.use();
+    shader.setInt("ourTexture", 0);
+    shader.setVec3("lightColor", glm::vec3(1.0f, 0.6f, 0.8f));
+
+    configCubeModelMatrix(shader);
+    configViewMatrix(shader);
+    configProjectionMatrix(shader);
+
+    glBindVertexArray(cubeVAO);
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glBindVertexArray(0);
+}
+
+void drawLightObject(unsigned int lightVAO, Shader &shader) {
+    shader.use();
+    shader.setVec3("lightColor", glm::vec3(1.0f, 0.2f, 0.6f));
+
+    configLightModelMatrix(shader);
+    configViewMatrix(shader);
+    configProjectionMatrix(shader);
+
+    glBindVertexArray(lightVAO);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glBindVertexArray(0);
 }
 
 int main() {
@@ -149,13 +214,15 @@ int main() {
 
     glViewport(0, 0, win_width, win_height);
 
-    unsigned int cubeVAO; configCubeVAO(&cubeVAO);
+    unsigned int cubeVAO, lightVAO;
 
-    Shader shader("src/cube_02.vs", "src/cube_02.fs");
-    shader.use();
+    configCubeVAO(&cubeVAO);
+    configLightVAO(&lightVAO);
+
+    Shader cubeShader("src/cube_02.vs", "src/cube_02.fs");
+    Shader lightShader("src/light_01.vs", "src/light_01.fs");
 
     generateTexture(0, "res/moting.jpg");
-    shader.setInt("ourTexture", 0);
 
     while (!glfwWindowShouldClose(window)) {
 
@@ -164,17 +231,8 @@ int main() {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glBindVertexArray(cubeVAO);
-
-        configModelMatrix(shader);
-        configViewMatrix(shader);
-        configProjectionMatrix(shader);
-
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-
-        glBindVertexArray(0);
+        drawCubeObject(cubeVAO, cubeShader);
+        drawLightObject(lightVAO, lightShader);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
