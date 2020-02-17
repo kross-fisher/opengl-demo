@@ -13,6 +13,10 @@
 float win_width = 800.0f;
 float win_height = 600.0f;
 
+glm::vec3 cubePos(-0.8f, 0.0f, -3.0f);
+glm::vec3 lightPos(1.5f, 0.2f, -2.5f);
+glm::vec3 lightColor(1.0f, 1.0f, 1.0f);
+
 void window_size_changed_cb(GLFWwindow *win, int width, int height) {
     std::cout << "GLFW window size changed: "<< width
         << "x" << height << std::endl;
@@ -128,7 +132,7 @@ void configCubeModelMatrix(Shader &shader) {
     float rot_degrees = glfwGetTime() * 60.0f;
 
     glm::mat4 model(1.0f);
-    model = glm::translate(model, glm::vec3(-0.8f, 0.0f, -3.0f));
+    model = glm::translate(model, cubePos);
     model = glm::rotate(model, glm::radians(rot_degrees), rot_axis);
     shader.setMat4("model", model);
 }
@@ -150,7 +154,7 @@ void configLightModelMatrix(Shader &shader) {
     float rot_degrees = glfwGetTime() * 150.0f;
 
     glm::mat4 model(1.0f);
-    model = glm::translate(model, glm::vec3(1.5f, 0.2f, -2.5f));
+    model = glm::translate(model, lightPos);
     model = glm::rotate(model, glm::radians(rot_degrees), rot_axis);
     model = glm::scale(model, glm::vec3(0.2f));
     shader.setMat4("model", model);
@@ -176,7 +180,8 @@ void configProjectionMatrix(Shader &shader) {
 void drawCubeObject(unsigned int cubeVAO, Shader &shader) {
     shader.use();
     shader.setInt("ourTexture", 0);
-    shader.setVec3("lightColor", glm::vec3(1.0f, 0.6f, 0.8f));
+    shader.setVec3("lightColor", lightColor);
+    shader.setVec3("lightPos", lightPos);
 
     configCubeModelMatrix(shader);
     configViewMatrix(shader);
@@ -190,7 +195,7 @@ void drawCubeObject(unsigned int cubeVAO, Shader &shader) {
 
 void drawLightObject(unsigned int lightVAO, Shader &shader) {
     shader.use();
-    shader.setVec3("lightColor", glm::vec3(1.0f, 0.2f, 0.6f));
+    shader.setVec3("lightColor", lightColor);
 
     configLightModelMatrix(shader);
     configViewMatrix(shader);
