@@ -165,6 +165,7 @@ void configViewMatrix(Shader &shader) {
     glm::vec3 camera_dst = glm::vec3(0.0f, 0.0f, 0.0f);
     glm::vec3 camera_up = glm::vec3(0.0f, 1.0f, 0.0f);
     glm::mat4 view = glm::lookAt(camera_pos, camera_dst, camera_up);
+    shader.setVec3("viewPos", camera_pos);
     shader.setMat4("view", view);
 }
 

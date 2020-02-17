@@ -7,6 +7,7 @@ in vec3 fragPos;
 uniform sampler2D ourTexture;
 uniform vec3 lightColor;
 uniform vec3 lightPos;
+uniform vec3 viewPos;
 
 out vec4 FragColor;
 
@@ -19,6 +20,12 @@ void main() {
     float diff = max(0.0, dot(normVec, lightDir));
     vec3 diffuse = diff * lightColor;
 
+    float specularStrength = 0.5;
+    vec3 viewDir = normalize(viewPos - fragPos);
+    vec3 reflectDir = reflect(-lightDir, normVec);
+    float spec = pow(max(0.0, dot(viewDir, reflectDir)), 32);
+    vec3 specular = specularStrength * spec * lightColor;
+
     vec3 objectColor = vec3(texture(ourTexture, texCoord));
-    FragColor = vec4((ambient + diffuse) * objectColor, 1.0);
+    FragColor = vec4((ambient + diffuse + specular) * objectColor, 1.0);
 }
