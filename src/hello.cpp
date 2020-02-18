@@ -14,7 +14,7 @@ float win_width = 800.0f;
 float win_height = 600.0f;
 
 glm::vec3 cubePos(-0.8f, 0.0f, -3.0f);
-glm::vec3 lightPos(1.5f, 0.2f, -2.5f);
+glm::vec3 lightPos(1.5f, 0.8f, -2.5f);
 glm::vec3 lightColor(1.0f, 1.0f, 1.0f);
 
 void window_size_changed_cb(GLFWwindow *win, int width, int height) {
@@ -181,8 +181,18 @@ void configProjectionMatrix(Shader &shader) {
 void drawCubeObject(unsigned int cubeVAO, Shader &shader) {
     shader.use();
     shader.setInt("ourTexture", 0);
-    shader.setVec3("lightColor", lightColor);
-    shader.setVec3("lightPos", lightPos);
+    shader.setInt("material.diffuse", 1);
+    shader.setInt("material.specular", 2);
+    //shader.setVec3("lightColor", lightColor);
+    shader.setVec3("light.position", lightPos);
+    shader.setVec3("light.ambient", glm::vec3(0.2f, 0.2f, 0.2f));
+    shader.setVec3("light.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
+    shader.setVec3("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
+
+    //shader.setVec3("material.ambient", glm::vec3(1.0f, 0.5f, 0.31f));
+    //shader.setVec3("material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f));
+    //shader.setVec3("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+    shader.setFloat("material.shininess", 32.0f);
 
     configCubeModelMatrix(shader);
     configViewMatrix(shader);
@@ -229,6 +239,8 @@ int main() {
     Shader lightShader("src/light_01.vs", "src/light_01.fs");
 
     generateTexture(0, "res/moting.jpg");
+    generateTexture(1, "res/container2.png");
+    generateTexture(2, "res/container2_specular.png");
 
     while (!glfwWindowShouldClose(window)) {
 
