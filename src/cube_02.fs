@@ -2,8 +2,8 @@
 
 in vec2 texCoord;
 in vec2 lightMapCoord;
-in vec3 normalVec;
-in vec3 fragPos;
+in mat4 fmodel;
+in vec3 fPos;
 
 uniform sampler2D ourTexture;
 uniform vec3 lightPos;
@@ -28,6 +28,15 @@ uniform Light light;
 out vec4 FragColor;
 
 void main() {
+    vec3 fragPos = vec3(fmodel * vec4(fPos, 1.0));
+
+    // calculating current fragment position's normal vector
+    vec3 normalVec = vec3(0.0);
+    normalVec.x = (abs(fPos.x) > 0.4999) ? fPos.x : 0;
+    normalVec.y = (abs(fPos.y) > 0.4999) ? fPos.y : 0;
+    normalVec.z = (abs(fPos.z) > 0.4999) ? fPos.z : 0;
+    normalVec = vec3(fmodel * vec4(normalVec, 0.0));
+
     vec3 lightMapTex = vec3(texture(material.diffuse, lightMapCoord));
     vec3 specuMapTex = vec3(texture(material.specular, lightMapCoord));
 

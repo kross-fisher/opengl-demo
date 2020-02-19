@@ -8,8 +8,8 @@ uniform mat4 proj;
 
 out vec2 texCoord;
 out vec2 lightMapCoord;
-out vec3 normalVec;
-out vec3 fragPos;
+out mat4 fmodel;
+out vec3 fPos;
 
 void main() {
     //gl_Position = vec4(aPos, 1.0);
@@ -18,11 +18,5 @@ void main() {
     texCoord = lightMapCoord = aTexCoord;
     texCoord.x = (texCoord.x - 0.5) * 0.46 + 0.5;
 
-    fragPos = vec3(model * vec4(aPos, 1.0));
-
-    // calculating current fragment position's normal vector
-    normalVec.x = (aPos.x > 0.4999 || aPos.x < -0.4999) ? aPos.x : 0;
-    normalVec.y = (aPos.y > 0.4999 || aPos.y < -0.4999) ? aPos.y : 0;
-    normalVec.z = (aPos.z > 0.4999 || aPos.z < -0.4999) ? aPos.z : 0;
-    normalVec = vec3(model * vec4(normalVec, 0.0));
+    fPos = aPos; fmodel = model;
 }
